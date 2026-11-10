@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Carlos Cruz: Systems and Cybersecurity graduate (Dec 2026). Projects in detection, identity, cloud security, and AI agent security.">
+<meta property="og:title" content="Carlos Cruz | Security Portfolio">
+<meta property="og:description" content="Carlos Cruz: Systems and Cybersecurity graduate (Dec 2026). Projects in detection, identity, cloud security, and AI agent security.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23050506'/%3E%3Ctext x='16' y='22' font-family='Arial,sans-serif' font-weight='700' font-size='15' fill='%23fff' text-anchor='middle'%3ECC%3C/text%3E%3C/svg%3E">
+<title>Carlos Cruz Security Portfolio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+html{color-scheme:dark}body{margin:0}[hidden]{display:none!important}img{max-width:100%}
+/* Layout: black and white, armored. Sticky status bar, hero split between identity and a live terminal,
+   then stacked panels with chamfered corners. No hue anywhere in the chrome: emphasis is white on black,
+   severity is a grey ramp, and the only color on the page lives inside real screenshots (on hover). */
+:root{
+  color-scheme:dark;
+  --bg:#050506;
+  --panel:#0c0c0e;
+  --panel-2:#151518;
+  --line:#232327;
+  --line-2:#3c3c43;
+  --fg:#f4f4f5;
+  --muted:#9c9ca5;
+  --dim:#64646d;
+  --sev-1:#4a4a52;
+  --sev-2:#7c7c86;
+  --sev-3:#b9b9c1;
+  --sev-4:#ffffff;
+  --cut:14px;
+  --f-display:"Chakra Petch","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+#net{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.45}
+.gridlight{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+  background-size:44px 44px;opacity:.55;
+  -webkit-mask-image:radial-gradient(circle 280px at var(--cx,50%) var(--cy,-300px),#000,transparent);
+  mask-image:radial-gradient(circle 280px at var(--cx,50%) var(--cy,-300px),#000,transparent)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--fg)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));position:relative;z-index:1}
+.mono{font-family:var(--f-mono)}
+
+/* boot overlay */
+#boot{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;transition:opacity .45s}
+#boot.out{opacity:0;pointer-events:none}
+.boot-box{width:min(520px,100%);font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.boot-name{font-family:var(--f-display);font-weight:700;font-size:34px;letter-spacing:.06em;color:var(--fg);text-transform:uppercase;margin-bottom:14px}
+#bootLog{white-space:pre-wrap;min-height:8.5em;line-height:1.7}
+#bootLog b{color:var(--fg);font-weight:500}
+.boot-bar{height:2px;background:var(--line);margin-top:14px}
+.boot-bar i{display:block;height:100%;width:0;background:var(--fg);transition:width .3s linear}
+#bootSkip{margin-top:16px;background:transparent;border:1px solid var(--line-2);color:var(--muted);font-family:var(--f-mono);font-size:11px;padding:6px 12px;letter-spacing:.08em}
+#bootSkip:hover{color:var(--fg);border-color:var(--fg)}
+
+/* status bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:rgba(5,5,6,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
+.mark{font-family:var(--f-display);font-weight:700;font-size:18px;letter-spacing:.08em;text-decoration:none}
+.mark span{animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.bar nav{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto}
+.bar nav a{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding:6px 9px;border:1px solid transparent;letter-spacing:.04em;text-decoration:none}
+.bar nav a:hover{color:var(--fg);border-color:var(--line-2)}
+.clock{font-family:var(--f-mono);font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+@media (max-width:700px){.clock{display:none}.bar nav{margin-left:0;width:100%}.bar nav a{padding:5px 8px 5px 0}}
+
+/* hero */
+.hero{padding-block:52px 40px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;align-items:center}
+@media (max-width:900px){.hero-grid{grid-template-columns:minmax(0,1fr);gap:28px}.hero{padding-block:30px 26px}}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pulse{width:8px;height:8px;background:var(--fg);box-shadow:0 0 0 0 rgba(255,255,255,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(52px,10.5vw,112px);line-height:.9;letter-spacing:-.015em;margin:16px 0 18px;text-transform:uppercase;overflow-wrap:anywhere;
+  background:linear-gradient(100deg,#fff 42%,#6d6d76 50%,#fff 58%) 100% 0/260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s ease-in-out infinite}
+@keyframes sheen{0%,55%{background-position:100% 0}85%,100%{background-position:0 0}}
+.lede{font-family:var(--f-display);font-weight:500;font-size:clamp(20px,2.6vw,25px);line-height:1.25;max-width:24em;margin:0 0 12px;text-wrap:balance}
+.sub{color:var(--muted);max-width:34em;margin:0 0 24px;font-size:15.5px}
+.cta{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font-family:var(--f-mono);font-size:13px;padding:11px 16px;border:1px solid var(--line-2);background:var(--panel);color:var(--fg);letter-spacing:.03em;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:border-color .15s,background .15s,transform .15s}
+.btn:hover{border-color:var(--fg);background:var(--panel-2);transform:translateY(-1px)}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:700;clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);padding-right:22px}
+.btn.primary:hover{background:#cfcfd6;border-color:#cfcfd6}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:30px}
+.stat{background:var(--bg);padding:13px 12px 11px;min-width:0}
+.stat b{display:block;font-family:var(--f-display);font-size:27px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+@media (max-width:520px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* chamfered panel */
+.cham{position:relative;clip-path:polygon(0 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%)}
+.cham::after{content:"";position:absolute;right:-3px;bottom:6.5px;width:20px;height:1px;background:var(--line-2);transform:rotate(-45deg);pointer-events:none}
+
+/* terminal */
+.term{background:var(--panel);border:1px solid var(--line-2);min-width:0}
+.term-head{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.term-head i{width:9px;height:9px;background:var(--line-2)}
+.term-head span{margin-left:6px}
+.term-out{font-family:var(--f-mono);font-size:13px;line-height:1.65;padding:14px;height:280px;overflow-y:auto;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted)}
+.term-out .c{color:var(--fg);font-weight:700}
+.term-out .w{color:var(--fg)}
+.term-out .e{color:var(--bg);background:var(--fg);padding:0 4px}
+.term-in{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);font-family:var(--f-mono);font-size:13px}
+.term-in label{color:var(--fg);white-space:nowrap}
+.term-in input{flex:1;min-width:0;background:transparent;border:0;color:var(--fg);font:inherit;outline:none;caret-color:var(--fg)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 18px}
+.chip{font-family:var(--f-mono);font-size:11px;padding:4px 9px;background:transparent;border:1px solid var(--line-2);color:var(--muted)}
+.chip:hover{color:var(--bg);background:var(--fg);border-color:var(--fg)}
+@media (max-width:900px){.term-out{height:220px}}
+
+/* sections */
+section{padding-block:52px;border-top:1px solid var(--line)}
+@media (max-width:700px){section{padding-block:38px}}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+h2{font-family:var(--f-display);font-weight:600;font-size:clamp(27px,4.5vw,40px);line-height:1.1;margin:0;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.tag{font-family:var(--f-mono);font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.intro{color:var(--muted);max-width:40em;margin:-8px 0 22px;font-size:15.5px}
+
+/* filters + projects */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.filter{font-family:var(--f-mono);font-size:12px;padding:8px 13px;border:1px solid var(--line-2);background:transparent;color:var(--muted);letter-spacing:.04em}
+.filter:hover{color:var(--fg);border-color:var(--fg)}
+.filter[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);padding:22px;min-width:0;display:flex;flex-direction:column;gap:12px;overflow:hidden;transition:border-color .2s}
+@media (max-width:520px){.card{padding:16px}}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(360px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.09),transparent 60%);opacity:0;transition:opacity .25s;pointer-events:none}
+.card:hover{border-color:var(--line-2)}
+.card:hover::before{opacity:1}
+.card.wide{grid-column:1/-1}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.status{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;padding:3px 8px;border:1px solid var(--fg);text-transform:uppercase}
+.status.live{background:var(--fg);color:var(--bg);font-weight:700}
+.status.built{color:var(--fg)}
+.status.building{color:var(--muted);border:1px dashed var(--dim)}
+.dom{font-family:var(--f-mono);font-size:11px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+h3{font-family:var(--f-display);font-weight:600;font-size:23px;line-height:1.2;margin:0;text-wrap:balance}
+.card p{margin:0;color:var(--muted);font-size:15px}
+.stack{display:flex;gap:6px;flex-wrap:wrap}
+.stack span{font-family:var(--f-mono);font-size:11px;color:var(--fg);background:var(--panel-2);border:1px solid var(--line);padding:3px 7px}
+.more{align-self:flex-start;font-family:var(--f-mono);font-size:12px;background:transparent;border:0;color:var(--fg);padding:4px 0}
+.more:hover{text-decoration:underline}
+.detail{border-top:1px dashed var(--line-2);padding-top:12px}
+.detail ul{margin:0;padding-left:18px;color:var(--fg);font-size:14.5px;display:grid;gap:6px}
+.links{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12.5px}
+
+/* screenshots */
+.shots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.shots{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.shot{padding:0;border:1px solid var(--line-2);background:var(--bg);display:block;position:relative;overflow:hidden;aspect-ratio:16/9;max-width:100%}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:left top;display:block;filter:grayscale(1) contrast(1.1) brightness(.9);transition:filter .3s,transform .4s}
+.shot:hover img,.shot:focus-visible img{filter:none;transform:scale(1.04)}
+.shot span{position:absolute;left:0;right:0;bottom:0;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.04em;padding:14px 7px 5px;background:linear-gradient(transparent,rgba(5,5,6,.92));color:var(--fg);text-align:left}
+#lightbox{position:fixed;inset:0;z-index:40;background:rgba(5,5,6,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;cursor:zoom-out}
+#lightbox img{max-width:100%;max-height:80%;border:1px solid var(--line-2);object-fit:contain}
+#lightbox p{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin:0;text-align:center;max-width:60em}
+#lbClose{background:transparent;border:1px solid var(--line-2);font-family:var(--f-mono);font-size:12px;padding:6px 12px}
+
+/* HIVE numbers */
+.hive{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px}
+@media (max-width:760px){.hive{grid-template-columns:minmax(0,1fr);gap:18px}}
+.nums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);align-self:start}
+.nums div{background:var(--panel);padding:12px;min-width:0}
+.nums b{display:block;font-family:var(--f-display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.nums span{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.sev{display:grid;gap:9px;align-content:start;min-width:0}
+.sev-cap{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.sev-row{display:grid;grid-template-columns:66px minmax(0,1fr) 36px;gap:10px;align-items:center;font-family:var(--f-mono);font-size:12px;background:transparent;border:0;padding:0;text-align:left;width:100%}
+.sev-row .track{height:16px;background:var(--panel-2);border:1px solid var(--line)}
+.sev-row .fill{display:block;height:100%;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.sev-row .n{text-align:right;font-variant-numeric:tabular-nums}
+.sev-row:hover .track,.sev-row:focus-visible .track{border-color:var(--fg)}
+.sev-note{font-family:var(--f-mono);font-size:12px;color:var(--muted);min-height:3.2em;margin:2px 0 0}
+
+/* attack path */
+.path{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:14px}
+@media (max-width:900px){.path{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.node{background:var(--panel);border:1px solid var(--line);padding:12px 10px;text-align:left;display:flex;flex-direction:column;gap:6px;min-width:0;transition:background .2s,border-color .2s,color .2s}
+.node .i{font-family:var(--f-mono);font-size:11px;color:var(--dim)}
+.node .t{font-family:var(--f-display);font-weight:600;font-size:15px;line-height:1.2}
+.node .o{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;color:var(--muted);margin-top:auto}
+.node:hover{border-color:var(--fg)}
+.node[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.node[aria-pressed="true"] .i,.node[aria-pressed="true"] .o{color:var(--bg)}
+.node.block{border-style:dashed}
+.path-detail{background:var(--panel);border:1px solid var(--line-2);padding:18px 20px 22px;display:grid;gap:8px}
+.path-detail .who{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--muted)}
+.path-detail h3{font-size:21px}
+.path-detail p{margin:0;color:var(--muted);max-width:46em;font-size:15px}
+.path-ctl{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+/* games */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.triage{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px}
+@media (max-width:860px){.triage{grid-template-columns:minmax(0,1fr)}}
+.mail{background:var(--panel);border:1px solid var(--line-2);min-width:0}
+.mail-h{padding:16px;border-bottom:1px solid var(--line);display:grid;gap:6px;font-family:var(--f-mono);font-size:12.5px}
+.mail-h div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px}
+@media (max-width:520px){.mail-h div{grid-template-columns:minmax(0,1fr);gap:0}}
+.mail-h .k{color:var(--dim)}
+.mail-b{padding:18px 16px;font-size:15px;display:grid;gap:12px}
+.mail-b p{margin:0}
+.hit{background:transparent;border:0;border-bottom:1px dotted var(--line-2);padding:0 1px;text-align:left;color:var(--fg);font:inherit;overflow-wrap:anywhere}
+.hit:hover{background:var(--panel-2);border-bottom-color:var(--fg)}
+.hit.found{background:var(--fg);color:var(--bg);border-bottom-color:var(--fg)}
+.hit.found *{color:var(--bg)!important}
+.hit.clean{color:var(--dim);border-bottom:1px solid var(--dim);text-decoration:line-through}
+.attach{font-family:var(--f-mono);font-size:12.5px;border:1px solid var(--line-2);padding:8px 10px;display:inline-block}
+.logwrap{overflow-x:auto;border:1px solid var(--line-2);background:var(--panel)}
+.signins{border-collapse:collapse;width:100%;min-width:640px;font-family:var(--f-mono);font-size:12.5px}
+.signins th{text-align:left;color:var(--dim);font-weight:400;padding:10px 12px;border-bottom:1px solid var(--line);letter-spacing:.06em;text-transform:uppercase;font-size:11px}
+.signins td{padding:0;border-bottom:1px solid var(--line)}
+.signins tr:last-child td{border-bottom:0}
+.signins .hit{display:block;width:100%;border:0;padding:10px 12px}
+.signins tr.rowhit{cursor:pointer}
+.signins tr.rowhit:hover td{background:var(--panel-2)}
+.signins tr.found td{background:var(--fg);color:var(--bg)}
+.signins tr.clean td{color:var(--dim)}
+.signins td.cell{padding:10px 12px;font-variant-numeric:tabular-nums}
+.desk{background:var(--panel);border:1px solid var(--line);padding:18px 18px 22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.score{font-family:var(--f-display);font-size:40px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.score small{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.08em;margin-left:8px}
+.meter{display:flex;gap:4px}
+.meter i{height:6px;flex:1;background:var(--line-2)}
+.meter i.on{background:var(--fg)}
+.log{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.log li b{color:var(--fg);font-weight:700}
+.verdict{border:1px solid var(--fg);padding:12px;font-size:14px}
+.verdict b{font-family:var(--f-mono);letter-spacing:.06em}
+
+/* experience + certs */
+.two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:40px}
+@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr);gap:30px}}
+.job{padding:0 0 22px 20px;border-left:1px solid var(--line-2);position:relative}
+.job::before{content:"";position:absolute;left:-5px;top:7px;width:9px;height:9px;background:var(--bg);border:1px solid var(--fg)}
+.job:last-child{padding-bottom:0}
+.job h3{font-size:20px}
+.job .when{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.04em}
+.job ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:15px;display:grid;gap:4px}
+.h4{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin:0 0 12px}
+.certs{display:grid;gap:8px;margin:0 0 26px;padding:0;list-style:none}
+.certs li{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:10px 12px;font-size:15px}
+.certs li span{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;white-space:nowrap}
+.certs .held span{color:var(--fg)}
+.certs .next{border-style:dashed;color:var(--muted)}
+.certs .next span{color:var(--dim)}
+.skills{display:grid;gap:14px}
+.skills > div{display:grid;gap:6px}
+
+/* contact */
+.contact{display:grid;gap:18px}
+.contact h2{font-size:clamp(32px,6vw,60px)}
+.addr{font-family:var(--f-mono);font-size:clamp(14px,2.6vw,20px);user-select:all;overflow-wrap:anywhere}
+footer{border-top:1px solid var(--line);padding-block:22px;font-family:var(--f-mono);font-size:12px;color:var(--dim);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}h1{background-position:100% 0}}
+</style>
+</head>
+<body>
+
+
+<div id="boot" hidden>
+  <div class="boot-box">
+    <div class="boot-name">Carlos Cruz</div>
+    <div id="bootLog"></div>
+    <div class="boot-bar"><i id="bootBar"></i></div>
+    <button id="bootSkip" type="button">SKIP</button>
+  </div>
+</div>
+
+<canvas id="net" aria-hidden="true"></canvas>
+<div class="gridlight" id="gridlight" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="Carlos Cruz, back to top">CC<span>_</span></a>
+    <span class="clock" id="clock">ATL --:--:--</span>
+    <nav aria-label="Sections">
+      <a href="#projects">projects</a>
+      <a href="#attack-path">attack path</a>
+      <a href="#play">play</a>
+      <a href="#experience">experience</a>
+      <a href="#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <div class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow"><span class="pulse"></span>Graduating Dec 2026 · open to security roles</div>
+        <h1 id="name" data-text="Carlos Cruz">Carlos Cruz</h1>
+        <p class="lede">I put real systems in front of real attackers, then lock them down and write up what happened.</p>
+        <p class="sub">Systems &amp; Cybersecurity senior at Georgia Gwinnett College. IT intern supporting about 700 users in Entra ID, Intune, and Defender. Cloud and Security Lead on a live Azure honeypot.</p>
+        <div class="cta">
+          <a class="btn primary" href="#projects">View projects</a>
+          <a class="btn" href="https://github.com/ccruz-security" target="_blank" rel="noopener">GitHub ↗</a>
+          <a class="btn" href="https://www.linkedin.com/in/carlos-cruz-481b62262" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="stats">
+          <div class="stat"><b data-count="3.96" data-dec="2">3.96</b><span>GPA</span></div>
+          <div class="stat"><b data-count="6">6</b><span>Certifications</span></div>
+          <div class="stat"><b data-count="700" data-suffix="+">700+</b><span>Users supported</span></div>
+          <div class="stat"><b data-count="446" data-suffix="K">446K</b><span>Attacks analyzed</span></div>
+        </div>
+      </div>
+
+      <div class="term cham" id="term">
+        <div class="term-head"><i></i><i></i><i></i><span>visitor@ccruz: ~</span></div>
+        <div class="term-out" id="termOut" aria-live="polite">Type a command or tap one below. Try <span class="c">help</span>.
+
+<span class="w">visitor@ccruz:~$</span> whoami
+<span class="w">Carlos Cruz</span>
+Systems &amp; Cybersecurity, Georgia Gwinnett College (Dec 2026)
+IT Intern, Tixzy Consulting
+Focus: detection and response, identity, cloud security, AI agent security
+</div>
+        <div class="term-in">
+          <label for="termIn">visitor@ccruz:~$</label>
+          <input id="termIn" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command">
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="projects">
+    <div class="sec-head"><h2>Projects</h2><span class="tag" id="projCount">7 entries</span></div>
+    <p class="intro">Filter by domain. Solid white means public and shipped. Dashed means still in the garage. Screenshots are real and come straight from the repos.</p>
+    <div class="filters" id="filters" role="group" aria-label="Filter projects by domain"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="attack-path">
+    <div class="sec-head"><h2>Attack path: Project HIVE</h2><span class="tag">Interactive</span></div>
+    <p class="intro">Follow one attacker through the honeypot. Tap any stage, or run the whole chain.</p>
+    <div class="path" id="path"></div>
+    <div class="path-detail cham" id="pathDetail" aria-live="polite"></div>
+    <div class="path-ctl">
+      <button class="btn primary" id="pathRun" type="button">Run the attack</button>
+      <a class="btn" href="https://youtu.be/4S7Jw_Ex95c" target="_blank" rel="noopener">Watch the real demo ↗</a>
+    </div>
+  </section>
+
+  <section id="play">
+    <div class="sec-head"><h2>Your turn</h2><span class="tag">Two challenges · fictional data</span></div>
+    <div class="tabs" role="group" aria-label="Choose a challenge">
+      <button class="filter" type="button" data-tab="gMail" aria-pressed="true">Phishing email</button>
+      <button class="filter" type="button" data-tab="gLogins" aria-pressed="false">Sign-in log</button>
+    </div>
+
+    <div class="game" id="gMail" data-total="6" data-verdict="&lt;b&gt;VERDICT: MALICIOUS&lt;/b&gt;&lt;br&gt;Credential phish. Next on the NIST 800-61 lifecycle: block the sender domain and IP, pull the message from every mailbox, reset the user and revoke sessions if the link was clicked, then write the report.">
+      <p class="intro">This landed in an employee inbox at 6:12 AM. Click anything that looks wrong. There are six indicators.</p>
+      <div class="triage">
+        <div class="mail">
+          <div class="mail-h">
+            <div><span class="k">From</span><span>Northwind Payroll &lt;<button class="hit" data-flag="Lookalike sender domain. The display name says Northwind, but the address uses n0rthwind-hr.co with a zero in place of the o.">payroll@n0rthwind-hr.co</button>&gt;</span></div>
+            <div><span class="k">Reply-To</span><span><button class="hit" data-flag="Reply-To points to a different domain than From, so any reply goes to the attacker.">hr.desk.northwind@gmail-secure.net</button></span></div>
+            <div><span class="k">To</span><span><button class="hit" data-clean="The recipient address is normal.">j.rivera@northwind.example</button></span></div>
+            <div><span class="k">Date</span><span><button class="hit" data-clean="Odd hour, but a timestamp alone proves nothing.">Mon, 9 Nov 2026 06:12:44 -0500</button></span></div>
+            <div><span class="k">Auth-Results</span><span><button class="hit" data-flag="SPF fail, no DKIM signature, DMARC fail. The sending server was never authorized to send for this domain.">spf=fail; dkim=none; dmarc=fail</button></span></div>
+            <div><span class="k">Subject</span><span><button class="hit" data-flag="Manufactured urgency. A two-hour deadline is there to stop you from checking with anyone.">ACTION REQUIRED: payroll suspended in 2 hours</button></span></div>
+          </div>
+          <div class="mail-b">
+            <p>Hello,</p>
+            <p>We could not verify your direct deposit details. To avoid a missed paycheck, confirm your account using the secure link below.</p>
+            <p><button class="hit" data-flag="The link text shows the company site, but the real target is a bare IP address serving login.php over plain http."><u>https://northwind.example/payroll</u> <span class="mono" style="font-size:12px;color:var(--dim)">→ hxxp://203.0.113[.]7/login.php</span></button></p>
+            <p><button class="hit attach" data-flag="An .html attachment is a classic credential harvesting form that opens locally and skips URL filtering.">Attachment: Payroll_Update.html (14 KB)</button></p>
+            <p><button class="hit" data-clean="A signature block is easy to copy. Not evidence either way.">Northwind People Team</button></p>
+          </div>
+        </div>
+        <div class="desk cham"></div>
+      </div>
+    </div>
+
+    <div class="game" id="gLogins" hidden data-total="3" data-verdict="&lt;b&gt;VERDICT: THREE ACCOUNTS AT RISK&lt;/b&gt;&lt;br&gt;Revoke sessions and reset j.rivera. Block legacy authentication with Conditional Access and rotate the service account. Reset k.owens, block the source IP, and check what that session touched.">
+      <p class="intro">One morning of sign-ins for a 40-person company. Three of these seven rows should wake somebody up. Click the rows you would escalate.</p>
+      <div class="triage">
+        <div class="logwrap">
+          <table class="signins">
+            <thead><tr><th>Time</th><th>User</th><th>Location</th><th>Client</th><th>MFA</th><th>Result</th></tr></thead>
+            <tbody id="signinRows"></tbody>
+          </table>
+        </div>
+        <div class="desk cham"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="sec-head"><h2>Experience and credentials</h2><span class="tag">English · Español</span></div>
+    <div class="two">
+      <div>
+        <div class="job">
+          <div class="when">APR 2026 TO PRESENT · SUWANEE, GA</div>
+          <h3>IT Intern, Tixzy Consulting</h3>
+          <ul>
+            <li>Support about 700 users across client organizations, around 30 tickets a week from Tier 1 through Tier 3.</li>
+            <li>Daily work in Entra ID, Intune, Defender, Azure, ConnectWise, and Meraki.</li>
+            <li>Wrote a PowerShell script that automates new user creation.</li>
+            <li>Wrote the firm's new employee handbook.</li>
+          </ul>
+        </div>
+        <div class="job">
+          <div class="when">SEP 2025 TO JUL 2026</div>
+          <h3>IT Help Desk and Support Services, Georgia Gwinnett College</h3>
+          <ul><li>Managed Azure Active Directory accounts, MFA, and SSO issues for students and staff.</li></ul>
+        </div>
+        <div class="job">
+          <div class="when">DEC 2026 · GPA 3.96</div>
+          <h3>B.S. Systems &amp; Cybersecurity, Georgia Gwinnett College</h3>
+          <ul><li>Honors Program (Event Coordinator), ITSA member.</li><li>Presenting Project HIVE at the GGC CREATES Conference, Nov 13, 2026.</li></ul>
+        </div>
+      </div>
+      <div>
+        <p class="h4">Certifications</p>
+        <ul class="certs">
+          <li class="held">CompTIA Security+<span>HELD</span></li>
+          <li class="held">Microsoft SC-300<span>HELD</span></li>
+          <li class="held">Microsoft AZ-900<span>HELD</span></li>
+          <li class="held">AWS Cloud Practitioner<span>HELD</span></li>
+          <li class="held">Google Cybersecurity Certificate<span>HELD</span></li>
+          <li class="held">Certiport Cybersecurity<span>HELD</span></li>
+          <li class="next">Microsoft SC-500<span>IN PROGRESS</span></li>
+          <li class="next">CompTIA CySA+<span>IN PROGRESS</span></li>
+          <li class="next">Splunk Core Certified User<span>IN PROGRESS</span></li>
+        </ul>
+        <p class="h4">Toolbox</p>
+        <div class="skills">
+          <div><span class="dom">Identity and endpoint</span><div class="stack"><span>Entra ID</span><span>MFA / SSO</span><span>Intune</span><span>Defender</span><span>Active Directory</span></div></div>
+          <div><span class="dom">Cloud and infrastructure</span><div class="stack"><span>Azure</span><span>Terraform</span><span>AKS</span><span>Docker</span><span>Key Vault</span><span>GitHub Actions</span><span>Meraki</span></div></div>
+          <div><span class="dom">Detection and analysis</span><div class="stack"><span>Wazuh</span><span>T-Pot</span><span>Kibana</span><span>KQL</span><span>Trivy</span><span>GoPhish</span></div></div>
+          <div><span class="dom">Scripting</span><div class="stack"><span>Python</span><span>PowerShell</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="contact">
+      <span class="tag">Contact</span>
+      <h2>Hiring for security? Let's talk.</h2>
+      <div class="addr" id="addr">carlos.cruz.official@outlook.com</div>
+      <div class="cta">
+        <button class="btn primary" id="copyBtn" type="button">Copy email</button>
+        <a class="btn" href="https://www.linkedin.com/in/carlos-cruz-481b62262" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a class="btn" href="https://github.com/ccruz-security" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <footer><span>Carlos Cruz · Dacula, GA</span><span>No trackers. No cookies.</span></footer>
+</main>
+
+<div id="lightbox" hidden role="dialog" aria-label="Screenshot">
+  <img id="lbImg" alt="">
+  <p id="lbCap"></p>
+  <button id="lbClose" type="button">CLOSE</button>
+</div>
+
+<script>
+(function(){
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var $ = function(id){ return document.getElementById(id); };
+function el(tag, cls, html){ var e = document.createElement(tag); if(cls) e.className = cls; if(html != null) e.innerHTML = html; return e; }
+
+/* ---------- boot sequence (once per session) ---------- */
+(function(){
+  var boot = $('boot'), seen = false;
+  try{ seen = sessionStorage.getItem('booted')==='1'; }catch(e){}
+  if(reduce || seen) return;
+  boot.hidden = false;
+  var lines = ['loading identity .......... <b>carlos cruz</b>','mounting /projects ........ <b>7 found</b>','honeypot telemetry ....... <b>446,402 events</b>','verifying credentials .... <b>6 certs valid</b>','access ................... <b>GRANTED</b>'];
+  var i = 0, log = $('bootLog'), bar = $('bootBar'), timer, done = false;
+  function finish(){
+    if(done) return; done = true; clearTimeout(timer);
+    try{ sessionStorage.setItem('booted','1'); }catch(e){}
+    boot.classList.add('out'); setTimeout(function(){ boot.hidden = true; }, 480);
+    removeEventListener('keydown', finish);
+  }
+  function step(){
+    if(i >= lines.length){ timer = setTimeout(finish, 380); return; }
+    log.insertAdjacentHTML('beforeend', '[ OK ] ' + lines[i] + '\n');
+    i++; bar.style.width = (i/lines.length*100)+'%';
+    timer = setTimeout(step, 270);
+  }
+  boot.addEventListener('click', finish);
+  addEventListener('keydown', finish);
+  step();
+})();
+
+/* ---------- data ---------- */
+var DOMAINS = [
+  {id:'all', label:'All'},
+  {id:'detect', label:'Detection & Response'},
+  {id:'identity', label:'Identity & Access'},
+  {id:'cloud', label:'Cloud Security'},
+  {id:'ai', label:'AI & Agent Security'}
+];
+var GH = 'https://github.com/ccruz-security';
+var PROJECTS = [
+  {key:'hive', wide:true, status:'live', statusText:'Public · shipped', dom:['detect','cloud','ai'],
+   title:'Project HIVE: honeypot plus AI intrusion detection',
+   blurb:'Four-person capstone. A T-Pot honeypot on an Internet-facing Azure VM takes real attacks, and an Isolation Forest scores every attacker every five minutes. I was the Cloud and Security Lead.',
+   stack:['T-Pot','Azure','Elasticsearch','Kibana','Python','Isolation Forest'],
+   shots:[['hive-map.webp','Live attack map: 180,939 attacks in one day'],['hive-score.webp','Scoring run: 515 anomalies out of 26,026 windows'],['hive-storage.webp','Log storage I locked down: no shared key, TLS 1.2 minimum']],
+   points:['Built the Azure resource group, network, VM, and static public IP.','Wrote the NSG rules: ports 1 to 64000 open to attackers, management ports restricted, outbound restricted so a compromised decoy cannot pivot.','Moved logs to a separate storage account so the evidence survives if the VM is compromised.','Owned the threat model, NSG audit, incident runbook, budget alert, and teardown plan. Total Azure cost for Oct 1 to 15: $23.11.'],
+   links:[['Watch the demo','https://youtu.be/4S7Jw_Ex95c'],['Repo',GH+'/ProjectHIVE']]},
+  {key:'azure', wide:true, status:'live', statusText:'Public · shipped', dom:['cloud','identity'],
+   title:'Azure Secure Platform',
+   blurb:'A hardened AKS platform defined entirely in Terraform. No stored passwords anywhere between a commit and a running pod.',
+   stack:['Terraform','AKS','Workload Identity','Key Vault','GitHub Actions','Trivy','KQL'],
+   shots:[['azure-pipeline.webp','CI pipeline green: build, scan, push in 52 seconds'],['azure-trivy.webp','Trivy flagging my own Terraform before it ships'],['azure-secret.webp','Key Vault secret read with no password stored']],
+   points:['Pods read Key Vault secrets through workload identity. No connection strings, no keys.','GitHub Actions logs in to Azure with OIDC federation instead of saved credentials.','Every scanner finding is fixed in code or accepted in a written risk register.','The whole environment destroys to $0 and comes back with one terraform apply.'],
+   links:[['Watch the walkthrough','https://youtu.be/qrCrQ_812SQ'],['Repo',GH+'/azure-secure-platform']]},
+  {key:'agent', status:'building', statusText:'In build', dom:['ai'],
+   title:'AI Agent Security Harness',
+   blurb:'A deliberately vulnerable tool-calling AI agent, built by hand so it can be attacked and then hardened.',
+   stack:['Python','Ollama','RAG','garak','PyRIT','OWASP LLM Top 10'],
+   points:['Centerpiece: indirect prompt injection that turns a poisoned document into command execution and data exfiltration.','Scanning with garak, red teaming with PyRIT, then a before and after re-scan.','Model supply chain: pickle risks, scanning, and signing.'],
+   links:[]},
+  {key:'phish', status:'building', statusText:'Rebuilding', dom:['detect'],
+   title:'Phishing Analysis & Incident Response Lab',
+   blurb:'One credential-phishing incident traced from delivery to recovery on the NIST 800-61 lifecycle, ending in a written incident report.',
+   stack:['Python','GoPhish','SPF / DKIM / DMARC','NIST 800-61'],
+   points:['Header forensics: Received chain, From versus Return-Path versus Reply-To.','Indicator extraction and threat intel enrichment to reach a verdict.','Metrics: time to detect, time to respond, dwell time.'],
+   links:[]},
+  {key:'iam', status:'building', statusText:'Rebuilding', dom:['identity'],
+   title:'Active Directory & IAM Hardening Lab',
+   blurb:'A Zero Trust oriented hardening pass on Active Directory, scripted in PowerShell.',
+   stack:['Active Directory','PowerShell','Least privilege'],
+   points:['Third piece of one story: the SIEM detects, the phishing lab responds, this lab contains.'],
+   links:[]},
+  {key:'wazuh', status:'built', statusText:'Lab built', dom:['detect'],
+   title:'Wazuh SIEM & File Integrity Lab',
+   blurb:'A home SIEM with file integrity monitoring on Ubuntu 22.04 in VirtualBox.',
+   stack:['Wazuh','Ubuntu 22.04','VirtualBox','FIM'],
+   points:['Now being extended into an AI-assisted SOC lab.'],
+   links:[]},
+  {key:'cost', status:'built', statusText:'Completed', dom:['cloud'],
+   title:'Azure Cost Visibility Dashboard',
+   blurb:'For owners who cannot read, predict, or explain their cloud bill.',
+   stack:['Cost Management','Azure Monitor','Logic Apps','Workbooks'],
+   points:['Budget alerts routed through Logic Apps email, with a Workbooks dashboard on top.'],
+   links:[]}
+];
+var HIVE_NUMS = [['446,402','attacks in training set'],['26,026','attacker windows scored'],['5,635','attacker IPs in 24h'],['67','countries in 24h']];
+var HIVE_SEV = [['Low',199,'--sev-1'],['Medium',164,'--sev-2'],['High',71,'--sev-3'],['Critical',81,'--sev-4']];
+var PATH = [
+  {t:'Internet attackers', o:'THE THREAT', who:'REAL TRAFFIC', d:'Nobody was invited. In one 24-hour window the honeypot took 360,864 attack events from 5,635 IP addresses in 67 countries.'},
+  {t:'Network security group', o:'MY WORK', who:'BUILT BY CARLOS', d:'The front door, left open on purpose. Inbound ports 1 to 64000 are allowed so attackers can reach the decoys. The management ports are restricted so admin access is never part of the attack surface.'},
+  {t:'T-Pot on an Azure VM', o:'MY VM · TEAM INSTALL', who:'VM BY CARLOS, T-POT BY THE TEAM', d:'More than 20 honeypots plus the Suricata IDS, running in Docker on Ubuntu 24.04. The attacker believes they found a real file server. Every keystroke is being recorded.'},
+  {t:'Logs and archive', o:'MY WORK', who:'STORAGE BY CARLOS', d:'Events land in Elasticsearch, and a copy goes to a separate storage account: no shared key, no anonymous access, TLS 1.2 minimum, versioning and 30-day soft delete. The evidence survives even if the VM does not.'},
+  {t:'Isolation Forest', o:'TEAM', who:'BUILT BY THE TEAM', d:'Every 5 minutes a Python job turns each attacker into five numbers (events, ports, failed logins, usernames tried, commands typed) and scores how unusual they are from 0 to 1.'},
+  {t:'Kibana alerts', o:'TEAM', who:'BUILT BY THE TEAM', d:'Of 26,026 attacker windows, 515 were flagged for review. After threshold tuning, 81 were critical, and every one of them was an SSH brute-forcer. Top score: 0.874.'},
+  {t:'Pivot attempt', o:'BLOCKED · MY WORK', who:'BUILT BY CARLOS', block:true, d:'The worst case for a honeypot is becoming a launchpad. If an attacker breaks out of a decoy and tries to hit other systems, the outbound rules stop it. I tested that restriction, then re-tested it each sprint.'}
+];
+var SIGNINS = [
+  ['08:02','m.chen','Atlanta, US','Browser','Passed','Success', false, 'Normal start to the day.'],
+  ['08:41','j.rivera','Atlanta, US','Browser','Passed','Success', false, 'Fine on its own. Keep it in mind for the next row.'],
+  ['08:47','j.rivera','Lagos, NG','Browser','Token reused','Success', true, 'Impossible travel. Atlanta to Lagos in six minutes, and MFA was satisfied by a reused token. That points to a stolen session.'],
+  ['09:15','a.patel','Dallas, US','Mobile app','Passed','Success', false, 'A different city with MFA passed is just someone traveling.'],
+  ['09:30','svc-backup','Atlanta, US','IMAP (legacy)','Not required','Success', true, 'Legacy authentication. IMAP cannot do MFA, so this sign-in skipped it completely, and a service account should not be signing in to mail at all.'],
+  ['10:05','k.owens','Frankfurt, DE','Browser','Not prompted','Success after 46 failures', true, 'Forty-six failures and then a success from the same address is a password attack that worked.'],
+  ['10:20','m.chen','Atlanta, US','Browser','Passed','Success', false, 'Same user, same place, same device. Nothing here.']
+];
+
+/* ---------- lightbox ---------- */
+var lb = $('lightbox');
+function openShot(src, cap){ $('lbImg').src = src; $('lbImg').alt = cap; $('lbCap').textContent = cap; lb.hidden = false; $('lbClose').focus(); }
+lb.addEventListener('click', function(){ lb.hidden = true; });
+addEventListener('keydown', function(e){ if(e.key==='Escape') lb.hidden = true; });
+
+/* ---------- projects ---------- */
+var grid = $('grid'), filters = $('filters'), active = 'all';
+function domLabel(id){ for(var i=0;i<DOMAINS.length;i++) if(DOMAINS[i].id===id) return DOMAINS[i].label; return id; }
+function hivePanel(){
+  var box = el('div','hive');
+  var nums = el('div','nums');
+  HIVE_NUMS.forEach(function(n){ nums.appendChild(el('div',null,'<b>'+n[0]+'</b><span>'+n[1]+'</span>')); });
+  var sev = el('div','sev');
+  sev.appendChild(el('div','sev-cap','515 anomalies by severity (hover or tap)'));
+  var note = el('p','sev-note','Top anomaly score: 0.874, an SSH brute-forcer.');
+  HIVE_SEV.forEach(function(s){
+    var row = el('button','sev-row'); row.type = 'button';
+    row.innerHTML = '<span>'+s[0]+'</span><span class="track"><span class="fill" style="background:var('+s[2]+')" data-w="'+(s[1]/199*100).toFixed(1)+'"></span></span><span class="n">'+s[1]+'</span>';
+    var say = function(){ note.textContent = s[0]+': '+s[1]+' of 515 anomalies ('+(s[1]/515*100).toFixed(1)+'%).'; };
+    row.addEventListener('mouseenter', say); row.addEventListener('focus', say); row.addEventListener('click', say);
+    sev.appendChild(row);
+  });
+  sev.appendChild(note);
+  box.appendChild(nums); box.appendChild(sev);
+  return box;
+}
+function render(){
+  grid.innerHTML = '';
+  var shown = PROJECTS.filter(function(p){ return active==='all' || p.dom.indexOf(active)>-1; });
+  shown.forEach(function(p){
+    var c = el('article','card cham'+(p.wide?' wide':''));
+    c.appendChild(el('div','card-top','<span class="status '+p.status+'">'+p.statusText+'</span><span class="dom">'+p.dom.map(domLabel).join(' / ')+'</span>'));
+    c.appendChild(el('h3',null,p.title));
+    c.appendChild(el('p',null,p.blurb));
+    if(p.key==='hive') c.appendChild(hivePanel());
+    if(p.shots){
+      var sh = el('div','shots');
+      p.shots.forEach(function(s){
+        var b = el('button','shot','<img src="'+s[0]+'" alt="'+s[1]+'" loading="lazy"><span>'+s[1]+'</span>');
+        b.type = 'button'; b.addEventListener('click', function(){ openShot(s[0], s[1]); });
+        sh.appendChild(b);
+      });
+      c.appendChild(sh);
+    }
+    c.appendChild(el('div','stack',p.stack.map(function(s){return '<span>'+s+'</span>';}).join('')));
+    if(p.links.length) c.appendChild(el('div','links',p.links.map(function(l){return '<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+' ↗</a>';}).join('')));
+    var d = el('div','detail'); d.id = 'detail-'+p.key; d.hidden = true;
+    d.innerHTML = '<ul>'+p.points.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
+    var b = el('button','more','[+] what I did'); b.type = 'button';
+    b.setAttribute('aria-expanded','false'); b.setAttribute('aria-controls', d.id);
+    b.addEventListener('click', function(){
+      d.hidden = !d.hidden;
+      b.textContent = d.hidden ? '[+] what I did' : '[-] hide';
+      b.setAttribute('aria-expanded', String(!d.hidden));
+    });
+    c.appendChild(b); c.appendChild(d);
+    c.addEventListener('pointermove', function(e){
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left)+'px');
+      c.style.setProperty('--my', (e.clientY - r.top)+'px');
+    });
+    grid.appendChild(c);
+  });
+  $('projCount').textContent = shown.length + (shown.length===1 ? ' entry' : ' entries');
+  requestAnimationFrame(function(){ grid.querySelectorAll('.fill').forEach(function(f){ f.style.width = f.dataset.w+'%'; }); });
+}
+DOMAINS.forEach(function(d){
+  var b = el('button','filter',d.label); b.type = 'button'; b.dataset.id = d.id;
+  b.setAttribute('aria-pressed', String(d.id==='all'));
+  b.addEventListener('click', function(){ setFilter(d.id); });
+  filters.appendChild(b);
+});
+function setFilter(id){
+  active = id;
+  filters.querySelectorAll('.filter').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.id===id)); });
+  render();
+}
+render();
+
+/* ---------- attack path ---------- */
+var pathTimer = null;
+function showNode(i){
+  var n = PATH[i], nodes = $('path').children;
+  for(var k=0;k<nodes.length;k++) nodes[k].setAttribute('aria-pressed', String(k===i));
+  $('pathDetail').innerHTML = '<span class="who">STAGE '+(i+1)+' OF '+PATH.length+' · '+n.who+'</span><h3>'+n.t+(n.block?' → blocked':'')+'</h3><p>'+n.d+'</p>';
+}
+function stopPath(){ clearTimeout(pathTimer); pathTimer = null; $('pathRun').textContent = 'Run the attack'; }
+PATH.forEach(function(n, i){
+  var b = el('button','node'+(n.block?' block':''),'<span class="i">0'+(i+1)+'</span><span class="t">'+n.t+'</span><span class="o">'+n.o+'</span>');
+  b.type = 'button';
+  b.addEventListener('click', function(){ stopPath(); showNode(i); });
+  $('path').appendChild(b);
+});
+showNode(1);
+$('pathRun').addEventListener('click', function(){
+  if(pathTimer){ stopPath(); return; }
+  var i = 0, btn = this; btn.textContent = 'Stop';
+  (function next(){
+    showNode(i); i++;
+    if(i < PATH.length) pathTimer = setTimeout(next, reduce ? 2600 : 2200); else { pathTimer = null; btn.textContent = 'Run it again'; }
+  })();
+});
+
+/* ---------- challenges ---------- */
+SIGNINS.forEach(function(r){
+  var tr = el('tr','rowhit hit'); tr.tabIndex = 0; tr.setAttribute('role','button');
+  if(r[6]) tr.dataset.flag = r[7]; else tr.dataset.clean = r[7];
+  tr.innerHTML = r.slice(0,6).map(function(c){ return '<td class="cell">'+c+'</td>'; }).join('');
+  $('signinRows').appendChild(tr);
+});
+document.querySelectorAll('.game').forEach(function(game){
+  var total = +game.dataset.total, desk = game.querySelector('.desk'), found, first;
+  desk.innerHTML = '<div class="score"><span class="fnd">0</span>/'+total+'<small>FOUND</small></div><div class="meter">'+new Array(total+1).join('<i></i>')+'</div><ul class="log"></ul><div class="verdict" hidden>'+game.dataset.verdict+'</div><button class="btn reset" type="button">Reset</button>';
+  var log = desk.querySelector('.log'), meter = desk.querySelector('.meter').children;
+  function reset(){
+    found = 0; first = true;
+    desk.querySelector('.fnd').textContent = '0'; desk.querySelector('.verdict').hidden = true;
+    log.innerHTML = '<li>Analyst notes will appear here as you click.</li>';
+    for(var i=0;i<meter.length;i++) meter[i].className = '';
+    game.querySelectorAll('.hit').forEach(function(h){ h.classList.remove('found','clean'); });
+  }
+  function note(label, text){
+    if(first){ log.innerHTML = ''; first = false; }
+    var li = el('li',null,'<b>'+label+'</b> '+text); log.insertBefore(li, log.firstChild);
+  }
+  function pick(b){
+    if(!b || b.classList.contains('found') || b.classList.contains('clean')) return;
+    if(b.dataset.flag){
+      b.classList.add('found'); found++;
+      desk.querySelector('.fnd').textContent = found;
+      meter[found-1].className = 'on';
+      note('FLAG '+found+'.', b.dataset.flag);
+      if(found===total) desk.querySelector('.verdict').hidden = false;
+    } else { b.classList.add('clean'); note('CLEAN.', b.dataset.clean); }
+  }
+  game.addEventListener('click', function(e){ pick(e.target.closest('.hit')); });
+  game.addEventListener('keydown', function(e){ if((e.key==='Enter'||e.key===' ') && e.target.matches('tr.hit')){ e.preventDefault(); pick(e.target); } });
+  desk.querySelector('.reset').addEventListener('click', reset);
+  reset();
+});
+function showTab(id){
+  document.querySelectorAll('[data-tab]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.tab===id)); });
+  document.querySelectorAll('.game').forEach(function(g){ g.hidden = g.id!==id; });
+}
+document.querySelectorAll('[data-tab]').forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.tab); }); });
+
+/* ---------- name scramble ---------- */
+(function(){
+  var h = $('name'), text = h.dataset.text, glyphs = '01#$%&/\\<>[]{}=+*ABCDEFXZ';
+  if(reduce) return;
+  var frame = 0, total = 34;
+  function tick(){
+    var out = '', lock = Math.floor(frame/total*text.length*1.15);
+    for(var i=0;i<text.length;i++) out += (i < lock || text[i]===' ') ? text[i] : glyphs[Math.floor(Math.random()*glyphs.length)];
+    h.textContent = out;
+    if(frame++ < total) setTimeout(tick, 38); else h.textContent = text;
+  }
+  tick();
+  h.addEventListener('mouseenter', function(){ if(frame > total){ frame = 0; tick(); } });
+})();
+
+/* ---------- stat counters ---------- */
+if(!reduce) document.querySelectorAll('[data-count]').forEach(function(n){
+  var target = parseFloat(n.dataset.count), dec = +(n.dataset.dec||0), suf = n.dataset.suffix||'';
+  var t0 = performance.now();
+  (function step(t){
+    var k = Math.min(1,(t-t0)/1300), v = target*(1-Math.pow(1-k,3));
+    n.textContent = v.toFixed(dec) + suf;
+    if(k<1) requestAnimationFrame(step);
+  })(t0);
+});
+
+/* ---------- clock ---------- */
+(function(){
+  var c = $('clock'), fmt;
+  try{ fmt = new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}); }catch(e){ return; }
+  function t(){ c.textContent = 'ATL ' + fmt.format(new Date()); }
+  t(); setInterval(t, 1000);
+})();
+
+/* ---------- terminal ---------- */
+(function(){
+  var out = $('termOut'), inp = $('termIn'), hist = [], hi = 0;
+  function esc(s){ return s.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+  function print(html){ out.insertAdjacentHTML('beforeend', html + '\n'); out.scrollTop = out.scrollHeight; }
+  function go(id){ var t = $(id); if(t) t.scrollIntoView({behavior: reduce?'auto':'smooth'}); }
+  var CMDS = {
+    help: function(){ return '<span class="c">whoami</span>       who this is\n<span class="c">projects</span>     list projects and status\n<span class="c">open &lt;name&gt;</span>  filter projects: detect, identity, cloud, ai\n<span class="c">hive</span>         Project HIVE numbers\n<span class="c">attack</span>       run the HIVE attack path\n<span class="c">phish</span>        phishing email challenge\n<span class="c">signins</span>      sign-in log challenge\n<span class="c">certs</span>        certifications\n<span class="c">skills</span>       toolbox\n<span class="c">contact</span>      how to reach me\n<span class="c">clear</span>        clear the screen'; },
+    whoami: function(){ return '<span class="w">Carlos Cruz</span>\nSystems &amp; Cybersecurity, Georgia Gwinnett College (Dec 2026)\nIT Intern, Tixzy Consulting\nFocus: detection and response, identity, cloud security, AI agent security'; },
+    projects: function(){ go('projects'); return PROJECTS.map(function(p){ return '<span class="w">['+p.statusText.toUpperCase()+']</span> '+esc(p.title); }).join('\n'); },
+    ls: function(){ return CMDS.projects(); },
+    certs: function(){ return '<span class="w">HELD</span>         Security+, SC-300, AZ-900, AWS Cloud Practitioner,\n             Google Cybersecurity, Certiport Cybersecurity\n<span class="w">IN PROGRESS</span>  SC-500, CySA+, Splunk Core Certified User'; },
+    skills: function(){ return '<span class="w">identity</span>   Entra ID, MFA/SSO, Intune, Defender, Active Directory\n<span class="w">cloud</span>      Azure, Terraform, AKS, Docker, Key Vault, GitHub Actions\n<span class="w">detection</span>  Wazuh, T-Pot, Kibana, KQL, Trivy, GoPhish\n<span class="w">scripting</span>  Python, PowerShell'; },
+    experience: function(){ go('experience'); return 'Apr 2026 to now        IT Intern, Tixzy Consulting\nSep 2025 to Jul 2026   IT Help Desk and Support Services, GGC'; },
+    hive: function(){ return '446,402 attacks in the training set\n26,026 attacker windows scored\n515 anomalies: 199 low, 164 medium, 71 high, 81 critical\ntop score 0.874 (SSH brute-forcer)\ndemo: <a href="https://youtu.be/4S7Jw_Ex95c" target="_blank" rel="noopener">youtu.be/4S7Jw_Ex95c</a>'; },
+    attack: function(){ go('attack-path'); setTimeout(function(){ if(!pathTimer) $('pathRun').click(); }, 500); return 'Launching against the honeypot. Watch stage 7.'; },
+    phish: function(){ showTab('gMail'); go('play'); return 'Opening the inbox. Six indicators.'; },
+    triage: function(){ return CMDS.phish(); },
+    signins: function(){ showTab('gLogins'); go('play'); return 'Opening the sign-in log. Three rows matter.'; },
+    contact: function(){ go('contact'); return 'email     carlos.cruz.official@outlook.com\ngithub    github.com/ccruz-security\nlinkedin  linkedin.com/in/carlos-cruz-481b62262'; },
+    sudo: function(){ return '<span class="e">visitor is not in the sudoers file. This incident will be reported.</span>'; },
+    rm: function(){ return '<span class="e">Nice try. Read-only filesystem.</span>'; },
+    hack: function(){ return '<span class="e">Access denied.</span> Real attackers go to the honeypot. Try <span class="c">attack</span>'; },
+    date: function(){ return esc(new Date().toString()); },
+    echo: function(a){ return esc(a.join(' ')); }
+  };
+  function run(raw){
+    var line = raw.trim(); if(!line) return;
+    print('<span class="w">visitor@ccruz:~$</span> ' + esc(line));
+    hist.push(line); hi = hist.length;
+    var parts = line.toLowerCase().split(/\s+/), cmd = parts[0], args = parts.slice(1);
+    if(cmd==='clear'){ out.innerHTML = ''; return; }
+    if(cmd==='open' || cmd==='cd'){
+      var map = {detect:'detect',detection:'detect',identity:'identity',iam:'identity',cloud:'cloud',ai:'ai',all:'all'};
+      var f = map[args[0]];
+      if(f){ setFilter(f); go('projects'); print('Filtering projects: ' + esc(domLabel(f))); }
+      else print('usage: open detect | identity | cloud | ai | all');
+      return;
+    }
+    if(CMDS[cmd]) print(CMDS[cmd](args));
+    else print('<span class="e">command not found: '+esc(cmd)+'</span> try <span class="c">help</span>');
+  }
+  inp.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){ run(inp.value); inp.value=''; }
+    else if(e.key==='ArrowUp'){ if(hi>0){ hi--; inp.value = hist[hi]; } e.preventDefault(); }
+    else if(e.key==='ArrowDown'){ if(hi<hist.length-1){ hi++; inp.value = hist[hi]; } else { hi = hist.length; inp.value=''; } e.preventDefault(); }
+  });
+  $('term').addEventListener('click', function(e){ if(!e.target.closest('a,button') && !String(getSelection())) inp.focus({preventScroll:true}); });
+  ['help','hive','attack','signins','open ai','sudo su'].forEach(function(c){
+    var b = el('button','chip',c); b.type='button';
+    b.addEventListener('click', function(){ run(c); });
+    $('chips').appendChild(b);
+  });
+})();
+
+/* ---------- copy email ---------- */
+$('copyBtn').addEventListener('click', function(){
+  var btn = this, addr = $('addr');
+  function sel(){ var r = document.createRange(); r.selectNodeContents(addr); var s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selected. Press Ctrl+C'; }
+  try{
+    navigator.clipboard.writeText(addr.textContent).then(function(){ btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent='Copy email'; }, 1800); }, sel);
+  }catch(e){ sel(); }
+});
+
+/* ---------- cursor light + network canvas ---------- */
+(function(){
+  var cv = $('net'), cx = cv.getContext('2d'), gl = $('gridlight'), W, H, dpr, nodes = [], mouse = {x:-999,y:-999}, pulses = [];
+  function size(){
+    dpr = Math.min(2, window.devicePixelRatio||1);
+    W = innerWidth; H = innerHeight;
+    cv.width = W*dpr; cv.height = H*dpr; cx.setTransform(dpr,0,0,dpr,0,0);
+    var n = Math.min(60, Math.round(W*H/24000));
+    nodes = [];
+    for(var i=0;i<n;i++) nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22});
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    var i,j,a,b,d;
+    for(i=0;i<nodes.length;i++){
+      a = nodes[i]; a.x+=a.vx; a.y+=a.vy;
+      if(a.x<0||a.x>W) a.vx*=-1; if(a.y<0||a.y>H) a.vy*=-1;
+      for(j=i+1;j<nodes.length;j++){
+        b = nodes[j]; d = Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<130){ cx.strokeStyle='rgba(156,156,165,'+(.14*(1-d/130))+')'; cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y); cx.stroke();
+          if(!reduce && Math.random()<.0004 && pulses.length<8) pulses.push({a:a,b:b,t:0}); }
+      }
+      d = Math.hypot(a.x-mouse.x,a.y-mouse.y);
+      if(d<190){ cx.strokeStyle='rgba(255,255,255,'+(.45*(1-d/190))+')'; cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(mouse.x,mouse.y); cx.stroke(); }
+      cx.fillStyle = d<190 ? 'rgba(255,255,255,.95)' : 'rgba(156,156,165,.5)';
+      cx.fillRect(a.x-1.2,a.y-1.2,2.4,2.4);
+    }
+    for(i=pulses.length-1;i>=0;i--){
+      var p = pulses[i]; p.t += .02;
+      if(p.t>=1){ pulses.splice(i,1); continue; }
+      cx.fillStyle='rgba(255,255,255,.95)';
+      cx.fillRect(p.a.x+(p.b.x-p.a.x)*p.t-1.5, p.a.y+(p.b.y-p.a.y)*p.t-1.5, 3, 3);
+    }
+    if(!reduce) requestAnimationFrame(draw);
+  }
+  addEventListener('resize', function(){ size(); if(reduce) draw(); });
+  addEventListener('pointermove', function(e){
+    mouse.x=e.clientX; mouse.y=e.clientY;
+    gl.style.setProperty('--cx', e.clientX+'px'); gl.style.setProperty('--cy', e.clientY+'px');
+  });
+  size(); draw();
+})();
+})();
+</script>
+
+</body>
+</html>
